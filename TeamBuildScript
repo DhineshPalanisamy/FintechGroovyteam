@@ -1,0 +1,35 @@
+pipeline {
+         agent  { 
+                label 'MainframeAgent'
+				}
+         environment {
+        z_cred = credentials('MainframeCred')
+        //PATH="C://Users//Administrator//AppData//Roaming//npm//node_modules//newman//bin//newman:$PATH"
+         }
+         stages {
+		         stage('Clean Workspace') {
+                 steps {
+				      cleanWs()
+                  }
+				 }
+		         stage('Git checout scm') {
+                 steps {
+				     sh 'git config --global http.sslVerify false'
+                     echo 'Cloning from the github'
+                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/DhineshPalanisamy/FintechzAPP.git']]])         
+                 }
+				 }
+                 stage('Build') {
+                 steps {
+				      echo 'Build in Progress'
+					  sh "/usr/lpp/IBM/dbb/bin/groovyz ${WORKSPACE}/build.groovy --logEncoding UTF-8 --impactBuild --application samples --sourceDir ${WORKSPACE} --workDir ${WORKSPACE}/BUILD-${BUILD_NUMBER} --hlq DBB.ZEN --buildHash"
+                 }
+				 }
+				  stage('Moving to Deployment') {
+                 steps {
+                     echo 'Starting the zowe'
+                       }
+                 }
+           }
+		   }
+
